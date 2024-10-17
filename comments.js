@@ -1,40 +1,26 @@
-// create web server
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var fs = require('fs');
-var path = require('path');
+// Create web server
+const express = require('express');
+const app = express();
+const port = 3000;
 
-// set the port of our application
-// process.env.PORT lets the port be set by Heroku
-var port = process.env.PORT || 8080;
+// Create an array to store comments
+let comments = [];
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/public'));
+// Middleware
+app.use(express.json());
 
-app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname + '/index.html'));
+// Get comments
+app.get('/comments', (req, res) => {
+  res.json(comments);
 });
 
-app.get('/comments', function(req, res) {
-    fs.readFile('comments.json', function(err, data) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(data);
-    });
+// Add comments
+app.post('/comments', (req, res) => {
+  const comment = req.body.comment;
+  comments.push(comment);
+  res.json(comment);
 });
 
-app.post('/comments', function(req, res) {
-    fs.readFile('comments.json', function(err, data) {
-        var comments = JSON.parse(data);
-        comments.push(req.body);
-        fs.writeFile('comments.json', JSON.stringify(comments, null, 4), function(err) {
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(comments));
-        });
-    });
-});
-
-app.listen(port, function() {
-    console.log('Our app is running on http://localhost:' + port);
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
